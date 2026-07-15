@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Downloaded resources and model weights
+resources/
+*.bin
+*.safetensors
+*.pth
+
+# Generated baseline artifacts and submissions
+outputs/
+submission/predictions.json
+submission/embeddings/*.pt
+submission.zip
+
+# Secrets
+.env
+

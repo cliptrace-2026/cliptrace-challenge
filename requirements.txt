@@ -1,0 +1,11 @@
+# CLIPTrace 2026 starter kit requirements
+
+torch>=2.2.0
+torchvision>=0.17.0
+transformers>=4.40.0
+huggingface-hub>=0.23.0
+safetensors>=0.4.0
+numpy>=1.24.0
+Pillow>=10.0.0
+tqdm>=4.65.0
+
