@@ -17,11 +17,11 @@ jobs:
       - name: Install CPU test dependencies
         run: |
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install pytest numpy Pillow huggingface-hub
+          pip install pytest numpy Pillow huggingface-hub transformers safetensors
       - name: Run tests
         run: pytest -q
       - name: Check public scripts
         run: |
           python download_resources.py --help
           python create_submission.py --help
-          python detection-recovery-track/scripts/baseline_decree.py --help
+          python Baseline/main.py --help

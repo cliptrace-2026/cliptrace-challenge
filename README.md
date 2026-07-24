@@ -2,147 +2,162 @@
 
 **后门模型检测与反演挑战赛**官方选手起步仓库。
 
-**官网：** [https://cliptrace-2026.github.io](https://cliptrace-2026.github.io)  
-**竞赛平台：** 即将公布  
-**Hugging Face：** [https://huggingface.co/cliptrace-2026](https://huggingface.co/cliptrace-2026)
+- 官网：[https://cliptrace-2026.github.io](https://cliptrace-2026.github.io)
+- 比赛模型：[RobinWZQ/cliptrace-2026-models](https://huggingface.co/RobinWZQ/cliptrace-2026-models)
+- Baseline 数据：[cliptrace-2026/cliptrace-baseline-data](https://huggingface.co/datasets/cliptrace-2026/cliptrace-baseline-data)
 
----
+## 任务
 
-## 赛题概览
+参赛者需要对每个 CLIP 模型完成：
 
-参赛者会获得一组顺序随机打乱的 CLIP 模型检查点，需要完成两个关联任务：
+1. 后门检测：输出 `0`（正常）或 `1`（后门）；
+2. 目标特征反演：对预测为后门的模型恢复一个 768 维、L2 归一化的目标特征。
 
-- **任务一：后门模型检测。** 为每个模型输出 `0`（正常）或 `1`（后门）。
-- **任务二：目标特征反演。** 对每个预测为后门的模型，恢复一个 768 维、L2 归一化的目标特征向量。
+官方检查点兼容 Hugging Face `CLIPModel`，基础架构为
+`openai/clip-vit-large-patch14-336`：输入大小 336 × 336，patch 大小 14，
+投影特征维度 768。
 
-最终成绩由检测准确率（30%）和目标特征反演得分（70%）组成。完整规则与评分方式请查看[赛事官网](https://cliptrace-2026.github.io/challenge/)。
+## 仓库结构
 
-## 官方提供内容
-
-- 完整的 Hugging Face `CLIPModel` 检查点；
-- 用于触发器反演的公开图像数据；
-- DECREE-style 检测与目标特征恢复 baseline；
-- 提交文件生成与本地格式检查脚本。
-
-模型固定为 `openai/clip-vit-large-patch14-336`，图像输入为 336 × 336，投影特征维度为 768。参赛者拥有模型权重和中间特征的白盒访问权限。
-
----
+```text
+cliptrace-challenge/
+├── Baseline/
+│   ├── main.py                 # DECREE-style 检测与反演
+│   ├── imagenet.py             # 数据集与 CLIP 图像预处理
+│   ├── utils.py                # 相似度等工具函数
+│   ├── trigger/
+│   │   └── trigger_clip_l.npz  # baseline 初始化所需触发器文件
+│   └── data/                   # 下载后的 baseline 数据
+├── submission/
+│   ├── code/
+│   └── embeddings/
+├── download_resources.py       # Hugging Face 下载器
+├── create_submission.py        # 校验并生成 submission.zip
+└── requirements.txt
+```
 
 ## 快速开始
 
-### 1 · 安装依赖
+### 1. 安装依赖
 
-建议使用 Python 3.10–3.12 和带 CUDA 的 PyTorch 环境。
+建议使用 Python 3.10–3.12 和带 CUDA 的 PyTorch。
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate          # Linux / macOS
-# .venv\Scripts\Activate.ps1      # Windows PowerShell
+# .venv\Scripts\Activate.ps1       # Windows PowerShell
 
 pip install -r requirements.txt
 ```
 
-### 2 · 下载模型和数据
+### 2. 登录 Hugging Face
 
-先完成 `hf auth login`，或设置有权访问竞赛资源的 `HF_TOKEN`：
+模型仓库是私有仓库，数据仓库需要接受访问条款。请先在对应页面取得权限，
+然后登录或设置 token：
+
+```bash
+hf auth login
+# 或：export HF_TOKEN=hf_...
+```
+
+不要把 token 写入代码或提交到 Git。
+
+### 3. 下载数据与模型
+
+下面的命令下载 baseline 数据和开发阶段的 `model_0001`：
 
 ```bash
 python download_resources.py
 ```
 
-默认下载开发阶段资源。阶段切换方式与参考仓库一致：修改 `download_resources.py` 顶部的 `PHASE`，或运行：
+默认只下载一个模型，避免意外拉取整套大体积检查点。常用选项：
 
 ```bash
-python download_resources.py --phase final
+# 只下载 baseline 数据
+python download_resources.py --data-only
+
+# 下载指定模型
+python download_resources.py --models-only --model-id model_0002
+
+# 显式下载当前阶段全部模型
+python download_resources.py --models-only --all-models
+
+# 决赛阶段
+python download_resources.py --phase final --model-id model_0001
 ```
 
-下载后的目录为：
+下载后的目录与 `Starter Kit` 保持一致：
 
 ```text
-resources/
-├── model-repository/models/development/model_0001/...
-└── data/imagenet/val/...
+cliptrace-2026-models/models/development/model_0001/...
+Baseline/data/imagenet/{train,val}/...
 ```
 
-### 3 · 运行 baseline
+### 4. 运行 baseline
 
 ```bash
-cd detection-recovery-track
-bash baseline_decree.sh
+python Baseline/main.py --model_id model_0001
 ```
 
-默认命令会依次处理阶段目录下的全部模型，并把结果直接写入仓库根目录的 `submission/`。也可以先对单个模型做快速冒烟测试：
+如果本地缺少该模型，`Baseline/main.py` 会自动从 Hugging Face **只下载当前
+`model_id`**，然后运行。关闭自动下载：
 
 ```bash
-MODEL_ID=model_0001 EPOCHS=1 MAX_SAMPLES=12 BATCH_SIZE=2 bash baseline_decree.sh
+python Baseline/main.py --model_id model_0001 --no-auto_download_model
 ```
 
-常用参数可以通过环境变量覆盖：
+也可以使用本地或自行训练的检查点：
 
 ```bash
-DEVICE=cuda:0 EPOCHS=100 MAX_SAMPLES=785 BATCH_SIZE=12 bash baseline_decree.sh
-MODELS_DIR=/path/to/models DATA_DIR=/path/to/data/imagenet bash baseline_decree.sh
+python Baseline/main.py \
+  --encoder_path /path/to/model \
+  --model_id my_model \
+  --imagenet_root /path/to/imagenet
 ```
 
-Windows 用户可以直接运行等价的 Python 命令：
-
-```powershell
-python detection-recovery-track/scripts/baseline_decree.py `
-  --models-dir resources/model-repository/models/development `
-  --data-dir resources/data/imagenet `
-  --submission-dir submission
-```
-
-### 4 · 创建提交包
+快速冒烟测试可减少轮数和数据比例：
 
 ```bash
-bash create_submission.sh
+python Baseline/main.py \
+  --model_id model_0001 \
+  --epochs 1 \
+  --sample_ratio 0.01 \
+  --batch_size 2
 ```
 
-或在任意系统上运行：
+默认输出：
 
-```bash
-python create_submission.py
+```text
+submission/predictions.json
+submission/embeddings/<model_id>.pt
+outputs/baseline-artifacts/<model_id>/...
+outputs/baseline_metrics.jsonl
 ```
 
-脚本会先严格检查 JSON、模型标识、特征形状、数据类型、有限值和 L2 范数，然后生成 `submission.zip`。
-
----
+每次运行处理一个模型，并增量更新 `predictions.json`。批量运行时，对模型目录
+逐个调用上述命令即可。
 
 ## Baseline 方法
 
-本仓库提供一个便于修改的 DECREE-style baseline：它为每个模型优化一个通用掩码和图像补丁，使不同输入的 CLIP 图像特征趋于相同；若优化得到的掩码足够稀疏，则将模型判定为后门模型，并将触发输入的平均投影特征作为目标特征估计。
-
-默认判定规则为：
+仓库中的实现与发布的 `Starter Kit/Baseline` 保持一致。它优化通用掩码和图像
+补丁，使不同输入的 CLIP 图像特征趋于相同；满足相似度条件后，以成功触发器中
+最小的掩码 L1 计算：
 
 ```text
 PL1 = L1(mask) / (336 × 336 × 3)
-label = 1 if PL1 < 0.10 else 0
+label = 1 if PL1 < 0.01 else 0
 ```
 
-这只是官方参考方法，不保证特定排行榜成绩。完整运行计算量较大，建议先用单模型、少轮数确认环境和数据路径，再开始正式运行。
+若判定为后门模型，baseline 会对触发输入的投影特征求均值并 L2 归一化，作为
+目标特征估计。这只是官方参考方法，不保证特定排行榜成绩。
 
 如果使用该 baseline，请引用：
 
 > Shiwei Feng, Guanhong Tao, Siyuan Cheng, Guangyu Shen, Xiangzhe Xu, and Zhangyang Wang. *Detecting Backdoors in Pre-trained Encoders*. CVPR 2023.
 
----
+## 创建提交包
 
-## 提交目录
-
-Baseline 会生成：
-
-```text
-submission/
-├── predictions.json
-├── embeddings/
-│   ├── model_0001.pt
-│   └── ...
-└── code/
-    └── README.md
-```
-
-`predictions.json` 示例：
+Baseline 生成的 `predictions.json` 格式如下：
 
 ```json
 {
@@ -162,19 +177,30 @@ submission/
 }
 ```
 
-每个 `.pt` 文件必须只包含一个位于 CPU 上的 `torch.float32` 张量，形状严格为 `[768]`，所有元素有限且 L2 范数与 1 的误差不超过 `1e-4`。
+每个 embedding 必须是位于 CPU 的 `torch.float32` 张量，形状严格为 `[768]`，
+元素全部有限且 L2 范数与 1 的误差不超过 `1e-4`。
+
+完成所有模型后运行：
+
+```bash
+python create_submission.py
+```
+
+脚本会校验提交并生成仓库根目录下的 `submission.zip`。若只想测试格式、尚未
+下载完整模型集，可使用：
+
+```bash
+python create_submission.py --skip-model-id-check
+```
 
 ## 开发自己的方法
 
-选手可以直接修改 `detection-recovery-track/scripts/baseline_decree.py`，也可以完全替换 baseline。只要最终按上述格式写入 `submission/`，就能复用官方检查和打包脚本。
-
-需要提交复现代码的阶段，请把方法代码放入 `submission/code/`，并补充运行环境、命令和硬件说明。
+可以直接修改 `Baseline/`，也可以完全替换 baseline。只要最终按上述格式写入
+`submission/`，就能复用官方校验与打包脚本。需要提交复现代码时，请把方法代码
+放入 `submission/code/`，并补充环境、命令和硬件说明。
 
 ## 联系方式
 
 - 官网：[https://cliptrace-2026.github.io](https://cliptrace-2026.github.io)
 - 邮箱：[wangzhongqi23s@ict.ac.cn](mailto:wangzhongqi23s@ict.ac.cn)
 - QQ 群：906907183
-
-祝各位参赛顺利！
-

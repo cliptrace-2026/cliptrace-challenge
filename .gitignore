@@ -10,7 +10,8 @@ __pycache__/
 .idea/
 
 # Downloaded resources and model weights
-resources/
+cliptrace-2026-models/
+Baseline/data/imagenet/
 *.bin
 *.safetensors
 *.pth
@@ -23,4 +24,3 @@ submission.zip
 
 # Secrets
 .env
-
