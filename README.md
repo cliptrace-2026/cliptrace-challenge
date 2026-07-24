@@ -139,9 +139,7 @@ outputs/baseline_metrics.jsonl
 
 ## Baseline 方法
 
-仓库中的实现与发布的 `Starter Kit/Baseline` 保持一致。它优化通用掩码和图像
-补丁，使不同输入的 CLIP 图像特征趋于相同；满足相似度条件后，以成功触发器中
-最小的掩码 L1 计算：
+它优化通用掩码和图像补丁，使不同输入的 CLIP 图像特征趋于相同；满足相似度条件后，以成功触发器中最小的掩码 L1 计算：
 
 ```text
 PL1 = L1(mask) / (336 × 336 × 3)
