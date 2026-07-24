@@ -81,9 +81,6 @@ python download_resources.py --models-only --model-id model_0002
 
 # 显式下载当前阶段全部模型
 python download_resources.py --models-only --all-models
-
-# 决赛阶段
-python download_resources.py --phase final --model-id model_0001
 ```
 
 下载后的目录与 `Starter Kit` 保持一致：
