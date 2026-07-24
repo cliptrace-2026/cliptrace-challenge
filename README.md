@@ -4,7 +4,7 @@
 
 - 官网：[https://cliptrace-2026.github.io](https://cliptrace-2026.github.io)
 - 比赛模型：[RobinWZQ/cliptrace-2026-models](https://huggingface.co/RobinWZQ/cliptrace-2026-models)
-- Baseline 数据：[cliptrace-2026/cliptrace-baseline-data](https://huggingface.co/datasets/cliptrace-2026/cliptrace-baseline-data)
+- 竞赛平台：[https://www.codabench.org/competitions/17511/](https://www.codabench.org/competitions/17511/)
 
 ## 任务
 
