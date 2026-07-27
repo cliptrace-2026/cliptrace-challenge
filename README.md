@@ -64,12 +64,6 @@ hf auth login
 
 ### 3. 下载数据与模型
 
-下面的命令下载 baseline 数据和开发阶段的 `model_0001`：
-
-```bash
-python download_resources.py
-```
-
 默认只下载一个模型，避免意外拉取整套大体积检查点。常用选项：
 
 ```bash
