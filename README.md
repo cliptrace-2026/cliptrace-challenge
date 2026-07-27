@@ -99,8 +99,7 @@ outputs/baseline-artifacts/<model_id>/...
 outputs/baseline_metrics.jsonl
 ```
 
-每次运行处理一个模型，并增量更新 `predictions.json`。批量运行时，对模型目录
-逐个调用上述命令即可。
+会自动打包成submission.zip文件供提交
 
 ## Baseline 方法
 
