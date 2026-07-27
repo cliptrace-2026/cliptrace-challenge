@@ -13,7 +13,7 @@
 1. 后门检测：输出 `0`（正常）或 `1`（后门）；
 2. 目标特征反演：对预测为后门的模型恢复一个 768 维、L2 归一化的目标特征。
 
-官方检查点兼容 Hugging Face `CLIPModel`，基础架构为
+待测模型为Hugging Face `CLIPModel`，基础架构为
 `openai/clip-vit-large-patch14-336`：输入大小 336 × 336，patch 大小 14，
 投影特征维度 768。
 
