@@ -99,7 +99,7 @@ outputs/baseline-artifacts/<model_id>/...
 outputs/baseline_metrics.jsonl
 ```
 
-会自动打包成submission.zip文件供提交
+会自动打包成submission.zip文件供提交。
 
 ## Baseline 方法
 
