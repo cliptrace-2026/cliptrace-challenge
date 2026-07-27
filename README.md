@@ -87,33 +87,7 @@ Baseline/data/imagenet/{train,val}/...
 ### 4. 运行 baseline
 
 ```bash
-python Baseline/main.py --model_id model_0001
-```
-
-如果本地缺少该模型，`Baseline/main.py` 会自动从 Hugging Face **只下载当前
-`model_id`**，然后运行。关闭自动下载：
-
-```bash
-python Baseline/main.py --model_id model_0001 --no-auto_download_model
-```
-
-也可以使用本地或自行训练的检查点：
-
-```bash
-python Baseline/main.py \
-  --encoder_path /path/to/model \
-  --model_id my_model \
-  --imagenet_root /path/to/imagenet
-```
-
-快速冒烟测试可减少轮数和数据比例：
-
-```bash
-python Baseline/main.py \
-  --model_id model_0001 \
-  --epochs 1 \
-  --sample_ratio 0.01 \
-  --batch_size 2
+bash run_all_cliptrace_models.sh
 ```
 
 默认输出：
